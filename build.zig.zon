@@ -1,0 +1,12 @@
+.{
+    .name = .pastebin,
+    .version = "0.15.1",
+    .dependencies = .{
+        .zap = .{
+            .url = "git+https://github.com/zigzap/zap#76679f308c702cd8880201e6e93914e1d836a54b",
+            .hash = "zap-0.10.6-GoeB8w-EJABTkxyoGH_Z8oMBYMxTBvn7YWk-DrJOHuDO",
+        },
+    },
+    .paths = .{""},
+    .fingerprint = 0x3cc9b406ddabb791,
+}

@@ -1,0 +1,38 @@
+Heya!
+
+  This is a simple pastebin / temporary file hoster.
+  Take a look at the API or use the webform below.
+  Pasting is heavily rate limited.
+
+API
+
+  POST {{URL}}/
+
+    Make a paste with the raw data sent along.
+
+    Use with the parameter 's' to generate a longer URL and encrypt the
+    content server-side (XSalsa20-Poly1305). Use the parameter 'ext'
+    to specify the file extension. Note: use the '.file' extension to
+    always make the link download the file.
+
+    If the response code is 201 (CREATED), then the paste was successfully
+    uploaded. Any other response code signifies an error.
+
+  GET {{URL}}/<id> [/<key>]
+
+    Retrieve a paste with the given id as plaintext.
+
+    If the paste was stored encrypted, you also need to specify a
+    decryption key.
+
+  DELETE {{URL}}/<id>
+
+    Delete the paste with the given id.
+
+    Note: All pastes have a default lifetime of 30 days.
+
+EXAMPLES:
+
+  Shell helper function:
+
+{{stylecode}}{{SCRIPT}}{{/stylecode}}

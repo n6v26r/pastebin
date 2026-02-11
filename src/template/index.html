@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Paste</title>
+  <link rel="icon" href="data:,">
+  <link rel="preload" href="/res/style.css" as="style" onload="this.rel='stylesheet'" />
+  <link rel="preload" href="/res/prismjs.css" as="style" onload="this.rel='stylesheet'" />
+  <script src="/res/prism.js"></script>
+  <script src="/res/webform.js" defer></script>
+  <script src="/res/index.js" defer></script>
+  <script src="/res/theme.js"></script>
+  <style>
+    pre,
+    code {
+      background-color: var(--transparent) !important;
+    }
+
+    .menu-wrap {
+      position: relative;
+    }
+
+    .menu-bar {
+      position: absolute;
+      right: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      background-color: var(--transparent);
+      user-select: none;
+      z-index: 1000;
+
+      font-size: 1em !important;
+    }
+
+    .menu-bar div {
+      display: flex;
+    }
+
+    .menu-bar button {
+      padding: 0;
+      border: 0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--base);
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: monospace;
+      height: 1em;
+      line-height: 1em;
+
+      color: var(--text);
+
+      &:hover {
+        background: var(--base);
+        color: var(--accent);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="page-content menu-wrap">
+      <div id="menu-bar-theme" class="menu-bar">
+        <div>
+          <button class="menu-toggle" id="menu-toggle">[◐]</button>
+
+          <div id="theme-buttons" style="display: none;">
+            <button class="theme-btn" data-theme="mocha">[ ]</button>
+            <button class="theme-btn" data-theme="macchiato">[ ]</button>
+            <button class="theme-btn" data-theme="frappe">[ ]</button>
+            <button class="theme-btn" data-theme="latte">[ ]</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-wrapper">
+        <pre class="help-text">{{HELP}}</pre>
+      </div>
+      <br />
+      <form id="paste-form">
+        <div class="code-mirror">
+          <pre class="code-highlight"><code id="content-highlight" class="language-none"></code></pre>
+          <textarea id="content" name="content" rows=20 placeholder="Paste your code here..."
+            spellcheck="false"></textarea>
+        </div>
+
+        <label>
+          Extension:
+          <input type="text" id="ext" placeholder="">
+        </label>
+
+        <label>
+          Or File:
+          <input type="file" id="file">
+        </label>
+
+        <label>
+          <input type="checkbox" id="secure">
+          <span>Secure</span>
+        </label>
+
+        <div id="paste-result" style="margin-top:1em;margin:0;">
+          <pre style="margin-bottom:0;"><span id="paste-spinner" style="margin:0;"></span></pre>
+          <div id="paste-url" style="display: inline;margin:0;"></div>
+          <button type="button" id="copy-btn" style="margin:0; display: none;">Copy</button>
+        </div>
+        <button type="submit">Paste!</button>
+      </form>
+    </div>
+  </main>
+  <!-- Hello there! OwO -->
+</body>
+
+</html>
