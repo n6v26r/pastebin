@@ -3,11 +3,22 @@ const settings = @import("settings.zig");
 
 const fs = std.fs.cwd();
 
-pub fn save(alloc: std.mem.Allocator, filename: []const u8, json_data: []const u8) !void {
-    const path = try std.fmt.allocPrint(alloc, settings.SAVE_PATH ++ "/{s}", .{filename});
+pub fn save(
+    alloc: std.mem.Allocator,
+    filename: []const u8,
+    json_data: []const u8,
+) !void {
+    const path = try std.fmt.allocPrint(
+        alloc,
+        settings.SAVE_PATH ++ "/{s}",
+        .{filename},
+    );
     defer alloc.free(path);
 
-    var file = try fs.createFile(path, .{ .truncate = true, .lock = .exclusive });
+    var file = try fs.createFile(
+        path,
+        .{ .truncate = true, .lock = .exclusive },
+    );
     defer file.close();
 
     const buffer = try alloc.alloc(u8, 1024);
@@ -18,7 +29,11 @@ pub fn save(alloc: std.mem.Allocator, filename: []const u8, json_data: []const u
 }
 
 pub fn read(alloc: std.mem.Allocator, filename: []const u8) ![]const u8 {
-    const path = try std.fmt.allocPrint(alloc, settings.SAVE_PATH ++ "/{s}", .{filename});
+    const path = try std.fmt.allocPrint(
+        alloc,
+        settings.SAVE_PATH ++ "/{s}",
+        .{filename},
+    );
     defer alloc.free(path);
 
     var file = try fs.openFile(path, .{ .lock = .shared });
@@ -27,13 +42,20 @@ pub fn read(alloc: std.mem.Allocator, filename: []const u8) ![]const u8 {
     const buffer = try alloc.alloc(u8, 1024);
     defer alloc.free(buffer);
     var reader = file.reader(buffer);
-    const content = try reader.interface.readAlloc(alloc, try file.getEndPos());
+    const content = try reader.interface.readAlloc(
+        alloc,
+        try file.getEndPos(),
+    );
 
     return content;
 }
 
 pub fn deleteFile(alloc: std.mem.Allocator, filename: []const u8) !void {
-    const path = try std.fmt.allocPrint(alloc, settings.SAVE_PATH ++ "/{s}", .{filename});
+    const path = try std.fmt.allocPrint(
+        alloc,
+        settings.SAVE_PATH ++ "/{s}",
+        .{filename},
+    );
     defer alloc.free(path);
 
     try fs.deleteFile(path);
@@ -76,10 +98,11 @@ fn getFileName(alloc: std.mem.Allocator, id: []const u8) ![]const u8 {
 
 pub fn clean(alloc: std.mem.Allocator) !void {
     const currtime = std.time.timestamp();
-    const dir = try std.fs.cwd().openDir(
+    var dir = try std.fs.cwd().openDir(
         settings.SAVE_PATH,
         .{ .iterate = true },
     );
+    defer dir.close();
 
     var it = dir.iterate();
     while (try it.next()) |entry| {
@@ -106,22 +129,19 @@ pub fn getFile(
     defer parsed.deinit();
 
     const text = try alloc.alloc(u8, parsed.value.text.len);
+    errdefer alloc.free(text);
     @memcpy(text, parsed.value.text);
 
     var nonce: ?[]const u8 = null;
     if (parsed.value.nonce) |n| {
-        const nonce_text = try alloc.alloc(u8, n.len);
-        @memcpy(nonce_text, n);
-        if (nonce_text.len > 0) {
+        if (n.len > 0) {
+            const nonce_text = try alloc.alloc(u8, n.len);
+            @memcpy(nonce_text, n);
             nonce = nonce_text;
-        } else alloc.free(nonce_text);
+        }
     }
 
-    return .{
-        .text = text,
-        .nonce = nonce,
-        .ttl = parsed.value.ttl,
-    };
+    return .{ .text = text, .nonce = nonce, .ttl = parsed.value.ttl };
 }
 
 pub fn get(
@@ -148,7 +168,10 @@ pub fn set(
     const path = try std.fmt.allocPrint(alloc, settings.SAVE_PATH ++ "/{s}", .{key});
     defer alloc.free(path);
 
-    var file = try fs.createFile(path, .{ .truncate = false, .exclusive = true, .lock = .exclusive });
+    var file = try fs.createFile(
+        path,
+        .{ .truncate = false, .exclusive = true, .lock = .exclusive },
+    );
     defer file.close();
 
     const buffer = try alloc.alloc(u8, 1024);

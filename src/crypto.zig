@@ -39,37 +39,45 @@ pub fn decodeB64(
     source: []const u8,
 ) ![]const u8 {
     const dest = try alloc.alloc(u8, try decoder.calcSizeForSlice(source));
+    errdefer alloc.free(dest);
     try decoder.decode(dest, source);
 
     return dest;
 }
 
-pub fn genNewKey(alloc: std.mem.Allocator) ![KEY_LEN]u8 {
+pub fn genNewKey(alloc: std.mem.Allocator) ![]u8 {
     const key = try alloc.alloc(u8, KEY_LEN);
     std.crypto.random.bytes(key);
 
-    return key[0..KEY_LEN].*;
+    return key;
 }
 
 pub fn encrypt(
-    allocator: std.mem.Allocator,
-    key: [KEY_LEN]u8,
+    alloc: std.mem.Allocator,
+    key: []const u8,
     plaintext: []const u8,
 ) !struct { []u8, []u8 } {
     if (key.len != KEY_LEN)
         return error.InvalidKeyLen;
 
-    const nonce: []u8 = try allocator.alloc(u8, NONCE_LEN);
+    const nonce: []u8 = try alloc.alloc(u8, NONCE_LEN);
+    errdefer alloc.free(nonce);
     crypto.random.bytes(nonce);
 
-    const ciphertext = try allocator.alloc(u8, plaintext.len + TAG_LENGTH);
-    crypto.nacl.SecretBox.seal(ciphertext, plaintext, nonce[0..24].*, key);
+    const ciphertext = try alloc.alloc(u8, plaintext.len + TAG_LENGTH);
+    errdefer alloc.free(ciphertext);
+    crypto.nacl.SecretBox.seal(
+        ciphertext,
+        plaintext,
+        nonce[0..NONCE_LEN].*,
+        key[0..KEY_LEN].*,
+    );
 
     return .{ ciphertext, nonce };
 }
 
 pub fn decrypt(
-    allocator: std.mem.Allocator,
+    alloc: std.mem.Allocator,
     key: []const u8,
     nonce: []const u8,
     ciphertext: []const u8,
@@ -77,7 +85,13 @@ pub fn decrypt(
     if (key.len != KEY_LEN)
         return error.AuthenticationFailed;
 
-    const plaintext = try allocator.alloc(u8, ciphertext.len - TAG_LENGTH);
-    try crypto.nacl.SecretBox.open(plaintext, ciphertext, nonce[0..NONCE_LEN].*, key[0..KEY_LEN].*);
+    const plaintext = try alloc.alloc(u8, ciphertext.len - TAG_LENGTH);
+    errdefer alloc.free(plaintext);
+    try crypto.nacl.SecretBox.open(
+        plaintext,
+        ciphertext,
+        nonce[0..NONCE_LEN].*,
+        key[0..KEY_LEN].*,
+    );
     return plaintext;
 }

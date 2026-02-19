@@ -3,7 +3,7 @@ pub const URL = "https://pasteit.zip";
 pub const MAX_SIZE = 5 * 1024 * 1024;
 pub const SAVE_PATH = "pastes";
 pub const ID_MIN_LEN = 4;
-pub const ID_MAX_LEN = 5;
+pub const ID_MAX_LEN = 6;
 pub const ID_LEN_MAX_COLLISIONS = 32;
 
 pub const FileType = struct {
@@ -141,7 +141,11 @@ pub const file_types = [_]FileType{
     .{ .ext = "woff", .mime = "font/woff", .displayable = false },
     .{ .ext = "woff2", .mime = "font/woff2", .displayable = false },
 
-    .{ .ext = "ipynb", .mime = "application/octet-stream", .displayable = false },
+    .{
+        .ext = "ipynb",
+        .mime = "application/octet-stream",
+        .displayable = false,
+    },
 
     .{
         .ext = "file",

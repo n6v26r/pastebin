@@ -48,38 +48,38 @@ pub fn createPaste(alloc: std.mem.Allocator, p: PasteData) !struct {
 } {
     const ttl = std.time.timestamp() + p.ttl;
     if (p.secure) {
-        const key: [crypto.KEY_LEN]u8 = try crypto.genNewKey(alloc);
+        const key: []u8 = try crypto.genNewKey(alloc);
+        defer alloc.free(key);
 
         const ciphertext, const nonce = try crypto.encrypt(alloc, key, p.text);
-        defer alloc.free(ciphertext);
-        defer alloc.free(nonce);
+        defer {
+            alloc.free(ciphertext);
+            alloc.free(nonce);
+        }
 
         const ciphertext_encoded = try crypto.encodeB64(
             alloc,
             crypto.b64_encoder,
             ciphertext,
         );
+        defer alloc.free(ciphertext_encoded);
         const nonce_encoded = try crypto.encodeB64(
             alloc,
             crypto.b64_encoder,
             nonce,
         );
-        defer alloc.free(ciphertext_encoded);
         defer alloc.free(nonce_encoded);
 
         const id = try setNewId(
             alloc,
-            db.Packet{
+            .{
                 .text = ciphertext_encoded,
                 .nonce = nonce_encoded,
                 .ttl = ttl,
             },
         );
-        return .{ id, try crypto.encodeB64(
-            alloc,
-            crypto.url_encoder,
-            &key,
-        ) };
+        errdefer alloc.free(id);
+        return .{ id, try crypto.encodeB64(alloc, crypto.url_encoder, key) };
     }
 
     const text_encoded = try crypto.encodeB64(
@@ -87,13 +87,10 @@ pub fn createPaste(alloc: std.mem.Allocator, p: PasteData) !struct {
         crypto.b64_encoder,
         p.text,
     );
+    errdefer alloc.free(text_encoded);
     const id = try setNewId(
         alloc,
-        db.Packet{
-            .text = text_encoded,
-            .nonce = null,
-            .ttl = ttl,
-        },
+        .{ .text = text_encoded, .nonce = null, .ttl = ttl },
     );
     return .{ id, null };
 }
@@ -104,22 +101,22 @@ pub fn getPaste(
     key: ?[]const u8,
 ) ![]const u8 {
     const data = try db.get(alloc, id);
-
     defer alloc.free(data.text);
-    defer if (data.nonce) |nonce| alloc.free(nonce);
 
     const text_decoded = try crypto.decodeB64(
         alloc,
         crypto.b64_decoder,
         data.text,
     );
+
     if (data.nonce) |nonce| {
+        defer alloc.free(text_decoded);
+        defer alloc.free(nonce);
         const nonce_decoded = try crypto.decodeB64(
             alloc,
             crypto.b64_decoder,
             nonce,
         );
-        defer alloc.free(text_decoded);
         defer alloc.free(nonce_decoded);
 
         const k = key orelse "";
@@ -142,10 +139,9 @@ pub fn deletePaste(
     alloc: std.mem.Allocator,
     id: []const u8,
     key: ?[]const u8,
-) ![]const u8 {
+) !void {
     const plaintext = try getPaste(alloc, id, key);
+    defer alloc.free(plaintext);
 
     try db.delete(alloc, id);
-
-    return plaintext;
 }

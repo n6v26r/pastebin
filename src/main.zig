@@ -14,32 +14,17 @@ fn notFound(r: *const zap.Request) !void {
     } else try r.sendBody(html.NOT_FOUND);
 }
 
-fn sendErrorRaw(
-    r: *const zap.Request,
-    status: zap.http.StatusCode,
-    err: anyerror,
-) !void {
+fn sendErrorRaw(r: *const zap.Request, status: zap.http.StatusCode, err: anyerror) !void {
     r.setStatus(status);
     var buf: [256]u8 = undefined;
     const message = try std.fmt.bufPrint(&buf, "{s}\n", .{@errorName(err)});
     try r.sendBody(message);
 }
 
-fn sendError(
-    alloc: std.mem.Allocator,
-    r: *const zap.Request,
-    status: zap.http.StatusCode,
-    err: anyerror,
-) !void {
+fn sendError(alloc: std.mem.Allocator, r: *const zap.Request, status: zap.http.StatusCode, err: anyerror) !void {
     r.setStatus(status);
     if (isBrowser(r)) {
-        const message = try std.mem.replaceOwned(
-            u8,
-            alloc,
-            html.ERR,
-            "{{ERROR}}",
-            @errorName(err),
-        );
+        const message = try std.mem.replaceOwned(u8, alloc, html.ERR, "{{ERROR}}", @errorName(err));
         try r.sendBody(message);
     } else try r.sendBody(@errorName(err));
 }
@@ -94,22 +79,10 @@ const RootEndpoint = struct {
                 const id = id_ext[0..dot_index];
                 const ext = id_ext[dot_index + 1 ..];
 
-                return .{
-                    id,
-                    ext,
-                    key,
-                };
-            } else return .{
-                id_ext,
-                null,
-                key,
-            };
+                return .{ id, ext, key };
+            } else return .{ id_ext, null, key };
         } else {
-            return .{
-                null,
-                null,
-                key,
-            };
+            return .{ null, null, key };
         }
     }
 
@@ -119,11 +92,7 @@ const RootEndpoint = struct {
         id: []const u8,
         ext: []const u8,
     ) !void {
-        const content_disposition = try std.fmt.allocPrint(
-            alloc,
-            "attachment; filename=paste:{s}.{s}",
-            .{ id, ext },
-        );
+        const content_disposition = try std.fmt.allocPrint(alloc, "attachment; filename=paste:{s}.{s}", .{ id, ext });
         try r.setHeader("Content-Disposition", content_disposition);
     }
 
@@ -155,7 +124,12 @@ const RootEndpoint = struct {
                     error.FileNotFound => {
                         try notFound(&r);
                     },
-                    else => try sendError(arena, &r, .internal_server_error, err),
+                    else => try sendError(
+                        arena,
+                        &r,
+                        .internal_server_error,
+                        err,
+                    ),
                 }
                 return;
             };
@@ -172,13 +146,7 @@ const RootEndpoint = struct {
                         "{{TEXT}}",
                         escaped_text,
                     );
-                    body = try std.mem.replaceOwned(
-                        u8,
-                        arena,
-                        body,
-                        "{{LANG}}",
-                        ext,
-                    );
+                    body = try std.mem.replaceOwned(u8, arena, body, "{{LANG}}", ext);
                     try r.sendBody(body);
                 } else try r.sendBody(plaintext);
             } else {
@@ -207,7 +175,7 @@ const RootEndpoint = struct {
         r.setStatus(.ok);
 
         if (id.len > 1) {
-            _ = paste.deletePaste(arena, id, key) catch |err| {
+            paste.deletePaste(arena, id, key) catch |err| {
                 switch (err) {
                     error.FileNotFound => {
                         try notFound(&r);
@@ -238,13 +206,11 @@ const RootEndpoint = struct {
 
         const id, const key_opt = paste.createPaste(
             arena,
-            paste.PasteData{ .text = content, .secure = secure },
+            .{ .text = content, .secure = secure },
         ) catch |err| {
             try sendErrorRaw(&r, .internal_server_error, err);
             return;
         };
-        defer arena.free(id);
-        defer if (key_opt) |key| arena.free(key);
 
         const full_url = if (ext) |ext_val|
             try std.fmt.allocPrint(
