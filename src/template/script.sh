@@ -1,9 +1,9 @@
     function paste() {
-      local file=/dev/stdin secure=0 ext=
+      local file=/dev/stdin secret=0 ext=
 
       for arg in "$@"; do
         case "$arg" in
-          -s) secure=1 ;;
+          -s) secret=1 ;;
           -e=*|-ext=*) ext=${arg#*=} ;;
           *) file=$arg ;;
         esac
@@ -14,7 +14,7 @@
       fi
 
       local url="{{URL}}/?"
-      [ $secure -eq 1 ] && url+="s=&"
+      [ $secret -eq 1 ] && url+="s=&"
       [ -n "$ext" ] && url+="ext=$ext&"
       url=${url%&}
 
