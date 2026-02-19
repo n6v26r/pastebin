@@ -200,13 +200,13 @@ const RootEndpoint = struct {
 
         r.parseQuery();
 
-        const secure = if (r.getParamSlice("s") != null) true else false;
+        const secret = if (r.getParamSlice("s") != null) true else false;
         var ext = r.getParamSlice("ext");
         if (ext != null and ext.?.len == 0) ext = null;
 
         const id, const key_opt = paste.createPaste(
             arena,
-            .{ .text = content, .secure = secure },
+            .{ .text = content, .secret = secret },
         ) catch |err| {
             try sendErrorRaw(&r, .internal_server_error, err);
             return;

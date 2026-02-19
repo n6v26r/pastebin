@@ -71,7 +71,7 @@ document.getElementById('paste-form').onsubmit = async (e) => {
     spinner.style.display = "none";
   };
 
-  const secure = document.getElementById('secure').checked;
+  const secret = document.getElementById('secret').checked;
   var ext = document.getElementById('ext').value.trim();
   const fileInput = document.getElementById('file');
   const isFile = fileInput.files.length > 0;
@@ -100,7 +100,7 @@ document.getElementById('paste-form').onsubmit = async (e) => {
   if (len > 0) {
     e.target.reset();
     setMirrorLanguage();
-    var postUrl = secure ? '/?s=' : '/?';
+    var postUrl = secret ? '/?s=' : '/?';
     postUrl += ext ? `&ext=${ext}` : '';
     const resultWrap = document.getElementById('paste-result');
     const resultDiv = document.getElementById('paste-url');

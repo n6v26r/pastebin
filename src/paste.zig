@@ -5,7 +5,7 @@ const crypto = @import("crypto.zig");
 
 pub const PasteData = struct {
     text: []const u8,
-    secure: bool,
+    secret: bool,
     ttl: i64 = settings.DEF_TTL,
 };
 
@@ -47,7 +47,7 @@ pub fn createPaste(alloc: std.mem.Allocator, p: PasteData) !struct {
     ?[]const u8,
 } {
     const ttl = std.time.timestamp() + p.ttl;
-    if (p.secure) {
+    if (p.secret) {
         const key: []u8 = try crypto.genNewKey(alloc);
         defer alloc.free(key);
 
