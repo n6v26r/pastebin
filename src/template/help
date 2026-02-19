@@ -18,14 +18,16 @@ API
     If the response code is 201 (CREATED), then the paste was successfully
     uploaded. Any other response code signifies an error.
 
-  GET {{URL}}/<id> [/<key>]
+    File size is capped at 5M.
+
+  GET {{URL}}/<id>[/<key>]
 
     Retrieve a paste with the given id as plaintext.
 
     If the paste was stored encrypted, you also need to specify a
     decryption key.
 
-  DELETE {{URL}}/<id>
+  DELETE {{URL}}/<id>[/<key>]
 
     Delete the paste with the given id.
 
@@ -33,6 +35,15 @@ API
 
 EXAMPLES:
 
+  Create a paste:
+
+    {{stylecode}}{{CURL}}{{/stylecode}}
+  Or from stdin:
+
+    {{stylecode}}{{CURL_STDIN}}{{/stylecode}}
+  Delete paste:
+
+    {{stylecode}}{{CURL_DELETE}}{{/stylecode}}
   Shell helper function:
 
 {{stylecode}}{{SCRIPT}}{{/stylecode}}

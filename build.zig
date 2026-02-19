@@ -55,6 +55,18 @@ pub fn build(b: *std.Build) !void {
                     .value = @embedFile("src/template/script.sh"),
                 },
                 .{
+                    .key = "{{CURL}}",
+                    .value = @embedFile("src/template/curl.sh"),
+                },
+                .{
+                    .key = "{{CURL_STDIN}}",
+                    .value = @embedFile("src/template/curl_stdin.sh"),
+                },
+                .{
+                    .key = "{{CURL_DELETE}}",
+                    .value = @embedFile("src/template/curl_delete.sh"),
+                },
+                .{
                     .key = "{{stylecode}}",
                     .value = "<code class=\"language-bash\">",
                     .escape = false,
@@ -97,6 +109,21 @@ pub fn build(b: *std.Build) !void {
                 .{
                     .key = "{{SCRIPT}}",
                     .value = @embedFile("src/template/script.sh"),
+                    .escape = false,
+                },
+                .{
+                    .key = "{{CURL}}",
+                    .value = @embedFile("src/template/curl.sh"),
+                    .escape = false,
+                },
+                .{
+                    .key = "{{CURL_STDIN}}",
+                    .value = @embedFile("src/template/curl_stdin.sh"),
+                    .escape = false,
+                },
+                .{
+                    .key = "{{CURL_DELETE}}",
+                    .value = @embedFile("src/template/curl_delete.sh"),
                     .escape = false,
                 },
                 .{
