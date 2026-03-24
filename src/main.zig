@@ -146,7 +146,8 @@ const RootEndpoint = struct {
                         "{{TEXT}}",
                         escaped_text,
                     );
-                    body = try std.mem.replaceOwned(u8, arena, body, "{{LANG}}", ext);
+                    const ext_escaped = try htmlEscape(arena, ext);
+                    body = try std.mem.replaceOwned(u8, arena, body, "{{LANG}}", ext_escaped);
                     try r.sendBody(body);
                 } else try r.sendBody(plaintext);
             } else {

@@ -2,7 +2,7 @@ Heya!
 
   This is a simple pastebin / temporary file hoster.
   Take a look at the API or use the webform below.
-  Pasting is heavily rate limited.
+  Requests are heavily rate limited.
 
 API
 
